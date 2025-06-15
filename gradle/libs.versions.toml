@@ -1,6 +1,8 @@
 [versions]
 agp = "8.10.1"
 biometric = "1.1.0"
+compose = "v0.12.0"
+composeVersion = "1.13.0"
 firebaseAuthKtx = "23.2.1"
 firebaseBom = "33.15.0"
 kotlin = "2.0.21"
@@ -21,6 +23,9 @@ androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "b
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "compose" }
+compose-v1130 = { module = "com.patrykandpatrick.vico:compose", version.ref = "composeVersion" }
+core = { module = "com.patrykandpatrick.vico:core", version.ref = "composeVersion" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }

@@ -71,7 +71,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.google.firebase.auth.ktx)
-
-
+    implementation(libs.compose)
+    implementation(libs.compose.v1130)
+    implementation(libs.core)
+//    implementation("com.patrykandpatrick.vico:compose:1.13.0")
+//    implementation("com.patrykandpatrick.vico:core:1.13.0")
+//    implementation("com.github.SmartToolFactory:Compose-Chart:1.0.4")
 
 }
