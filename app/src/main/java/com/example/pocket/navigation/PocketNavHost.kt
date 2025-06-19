@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import com.example.pocket.ui.screens.BudgetPlanningScreen
 import com.example.pocket.ui.screens.BudgetSummaryScreen
 import com.example.pocket.ui.screens.DashboardScreen
+import com.example.pocket.ui.screens.ExpenseTrackerScreen
 import com.example.pocket.ui.screens.HistoryScreen
 import com.example.pocket.ui.screens.auth.ForgotPasswordScreen
 import com.example.pocket.ui.screens.auth.LoginScreen
@@ -79,6 +80,13 @@ fun PocketNavHost(
             }
             composable("history") {
                 HistoryScreen(onBack = { navController.popBackStack() })
+            }
+            composable("expense_tracker") {
+                ExpenseTrackerScreen(
+                    onNavigateToDashboard = {
+                        navController.popBackStack("dashboard", inclusive = false)
+                    }
+                )
             }
         }
     }
