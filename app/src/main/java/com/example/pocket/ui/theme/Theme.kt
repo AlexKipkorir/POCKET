@@ -18,6 +18,9 @@ import com.example.pocket.ui.theme.Typography
 private val Crimson = Color(0xFF990000)
 private val white = Color(0xFFFFFFFF)
 
+val crimson = Color(0xFFB71C1C) // deep red
+
+
 private val PocketColorScheme = darkColorScheme(
     primary = Crimson,
     onPrimary = White,

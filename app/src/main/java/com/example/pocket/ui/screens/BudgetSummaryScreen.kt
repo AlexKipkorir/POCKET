@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
+import com.example.pocket.utils.getColorForCategory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
