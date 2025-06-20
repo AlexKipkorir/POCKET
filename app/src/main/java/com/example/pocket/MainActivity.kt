@@ -15,6 +15,7 @@ import com.example.pocket.ui.theme.PocketTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.pocket.utils.createBillReminderChannel
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -23,9 +24,9 @@ class MainActivity : ComponentActivity() {
 
         FirebaseApp.initializeApp(this)
         FirebaseAuth.getInstance().useEmulator("10.0.2.2", 9099)
-        FirebaseFirestore.getInstance().useEmulator("10.0.2.2", 8080)
+        FirebaseFirestore.getInstance().useEmulator("10.0.2.2", 8085)
 
-
+        createBillReminderChannel(this)
         setContent {
             PocketTheme {
                 PocketApp()

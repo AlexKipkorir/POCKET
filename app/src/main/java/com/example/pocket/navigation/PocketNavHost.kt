@@ -1,16 +1,16 @@
 package com.example.pocket.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.pocket.model.FinancialGoal
+import com.example.pocket.ui.screens.BillReminderScreen
 import com.example.pocket.ui.screens.BudgetPlanningScreen
 import com.example.pocket.ui.screens.BudgetSummaryScreen
 import com.example.pocket.ui.screens.DashboardScreen
@@ -18,14 +18,16 @@ import com.example.pocket.ui.screens.ExpenseTrackerScreen
 import com.example.pocket.ui.screens.FinancialGoalsScreen
 import com.example.pocket.ui.screens.FinancialReportScreen
 import com.example.pocket.ui.screens.HistoryScreen
+import com.example.pocket.ui.screens.SplashScreen
 import com.example.pocket.ui.screens.auth.ForgotPasswordScreen
 import com.example.pocket.ui.screens.auth.LoginScreen
-import com.example.pocket.ui.screens.auth.SignUpScreen
-import com.example.pocket.ui.screens.SplashScreen
 import com.example.pocket.ui.screens.auth.OTPSelectionScreen
 import com.example.pocket.ui.screens.auth.OTPVerificationScreen
+import com.example.pocket.ui.screens.auth.SignUpScreen
+import com.example.pocket.viewmodels.BillReminderViewModel
 import com.example.pocket.viewmodels.BudgetViewModel
 import com.example.pocket.viewmodels.GoalsViewModel
+
 
 @ExperimentalMaterial3Api
 @Composable
@@ -109,6 +111,16 @@ fun PocketNavHost(
                     }
                 )
             }
+            composable("bill_reminders") {
+                val viewModel: BillReminderViewModel = viewModel()
+                BillReminderScreen(
+                    viewModel = viewModel,
+                    onBackToDashboard = {
+                        navController.popBackStack("dashboard", inclusive = false)
+                    }
+                )
+            }
+
         }
     }
 }
