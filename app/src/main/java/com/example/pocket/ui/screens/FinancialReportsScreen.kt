@@ -413,7 +413,7 @@ fun ExpensePieChart(
             drawArc(
                 color = getColorForCategory(category.name),
                 startAngle = startAngle,
-                sweepAngle = animatedAngles[index], // ✅ fixed parameter name
+                sweepAngle = animatedAngles[index],
                 useCenter = true
             )
             startAngle += animatedAngles[index]

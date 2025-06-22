@@ -75,6 +75,8 @@ dependencies {
     implementation(libs.compose.v1130)
     implementation(libs.core)
     implementation(libs.play.services.auth)
+    implementation ("androidx.compose.material:material:1.6.6")
+//    implementation("com.github.tehras:charts:1.0.0-beta01")
 //    implementation("com.patrykandpatrick.vico:compose:1.13.0")
 //    implementation("com.patrykandpatrick.vico:core:1.13.0")
 //    implementation("com.github.SmartToolFactory:Compose-Chart:1.0.4")

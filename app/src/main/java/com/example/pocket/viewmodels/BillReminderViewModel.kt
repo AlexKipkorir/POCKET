@@ -11,6 +11,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import com.example.pocket.R
+import com.example.pocket.model.BillReminder
+import com.example.pocket.model.BillReminderUiState
 import com.example.pocket.ui.screens.BillReminderReceiver
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -19,20 +21,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.*
+import java.util.Date
+import java.util.Random
 import java.util.concurrent.TimeUnit
 
-data class BillReminder(
-    val id: String = UUID.randomUUID().toString(),
-    val name: String,
-    val amount: Double,
-    val dueDate: Date
-)
-
-data class BillReminderUiState(
-    val bills: List<BillReminder> = emptyList(),
-    val selectedFilter: String = "All"
-)
 
 class BillReminderViewModel : ViewModel() {
 
@@ -46,30 +38,33 @@ class BillReminderViewModel : ViewModel() {
     private var lastDeleted: BillReminder? = null
 
     init {
-        fetchBills()
 
-        if (_uiState.value.bills.isEmpty()) {
-            val today = LocalDate.now()
-            val mockBills = listOf(
-                BillReminder(
-                    name = "Water Bill",
-                    amount = 450.0,
-                    dueDate = Date.from(today.plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant())
-                ),
-                BillReminder(
-                    name = "Electricity",
-                    amount = 1200.0,
-                    dueDate = Date.from(today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
-                ),
-                BillReminder(
-                    name = "Internet",
-                    amount = 3000.0,
-                    dueDate = Date.from(today.minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
-                )
-            )
-            allBills = mockBills
-            _uiState.value = _uiState.value.copy(bills = mockBills)
-        }
+//        val today = LocalDate.now()
+//        val mockBills = listOf(
+//            BillReminder(
+//                name = "Water Bill",
+//                amount = 450.0,
+//                dueDate = Date.from(today.plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant())
+//            ),
+//            BillReminder(
+//                name = "Electricity",
+//                amount = 1200.0,
+//                dueDate = Date.from(today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+//            ),
+//            BillReminder(
+//                name = "Internet",
+//                amount = 3000.0,
+//                dueDate = Date.from(today.minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+//            )
+//        )
+//        allBills = mockBills
+//        _uiState.value = _uiState.value.copy(bills = mockBills)
+
+        // Step 2: After delay, load Firestore data
+//        viewModelScope.launch {
+//            delay(2000)
+            fetchBills()
+//        }
     }
 
     private fun fetchBills() {
@@ -82,13 +77,23 @@ class BillReminderViewModel : ViewModel() {
                         val name = doc.getString("name") ?: return@mapNotNull null
                         val amount = doc.getDouble("amount") ?: return@mapNotNull null
                         val dueDate = doc.getTimestamp("dueDate")?.toDate() ?: return@mapNotNull null
+                        val isPaid = doc.getBoolean("isPaid") ?: false
+                        val reminderEnabled = doc.getBoolean("reminderEnabled") ?: true
+
                         BillReminder(
                             id = doc.id,
                             name = name,
                             amount = amount,
-                            dueDate = dueDate
+                            dueDate = dueDate,
+                            isPaid = isPaid,
+                            reminderEnabled = reminderEnabled
                         )
                     }
+                    if (items != allBills) {
+                        allBills = items
+                        applyFilter(_uiState.value.selectedFilter)
+                    }
+
                     allBills = items
                     applyFilter(_uiState.value.selectedFilter)
                 }
@@ -99,42 +104,35 @@ class BillReminderViewModel : ViewModel() {
         context: Context,
         name: String,
         amount: Double,
-        dueDate: LocalDate,
+        dueDate: Date,
         onComplete: (() -> Unit)? = null
     ) {
         val userId = auth.currentUser?.uid ?: return
-        val date = Date.from(dueDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
         val bill = mapOf(
             "name" to name,
             "amount" to amount,
-            "dueDate" to Timestamp(date),
+            "dueDate" to Timestamp(dueDate),
             "userId" to userId
         )
 
         firestore.collection("bills").add(bill)
             .addOnSuccessListener { documentRef ->
-                // Delayed reminder
                 scheduleBillNotification(
                     context = context,
                     billId = documentRef.id,
                     title = "Upcoming Bill",
                     message = "\"$name\" of Ksh ${"%.2f".format(amount)} is due soon!",
-                    dueDate = date
+                    dueDate = dueDate
                 )
-
-                // Instant confirmation
                 showInstantConfirmationNotification(context, name)
 
-                // Optional: refresh and callback
-                fetchBills()
+                // DO NOT call fetchBills() here
                 onComplete?.invoke()
             }
-            .addOnFailureListener { e ->
-                Log.e("addBill", "Failed to add bill: $e")
+            .addOnFailureListener {
+                Log.e("AddBill", "Failed to add: $it")
             }
     }
-
-
 
     fun deleteBill(bill: BillReminder) {
         lastDeleted = bill
@@ -143,15 +141,17 @@ class BillReminderViewModel : ViewModel() {
 
     fun undoDelete(context: Context) {
         lastDeleted?.let { bill ->
+            val dueDate = bill.dueDate
             addBill(
                 context = context,
                 name = bill.name,
                 amount = bill.amount,
-                dueDate = bill.dueDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+                dueDate = dueDate
             )
             lastDeleted = null
         }
     }
+
 
     fun filterBills(filter: String) {
         _uiState.value = _uiState.value.copy(selectedFilter = filter)
@@ -223,7 +223,57 @@ class BillReminderViewModel : ViewModel() {
 
         notificationManager.notify(Random().nextInt(), notification)
     }
+    fun togglePaidStatus(bill: BillReminder) {
+        firestore.collection("bills").document(bill.id)
+            .update("isPaid", !bill.isPaid)
+    }
 
+    fun toggleReminder(bill: BillReminder) {
+        firestore.collection("bills").document(bill.id)
+            .update("reminderEnabled", !bill.reminderEnabled)
+    }
 
+    fun updateBill(
+        context: Context,
+        billId: String,
+        name: String,
+        amount: Double,
+        dueDate: Date,
+        reminderEnabled: Boolean
+    ) {
+        firestore.collection("bills").document(billId).update(
+            mapOf(
+                "name" to name,
+                "amount" to amount,
+                "dueDate" to Timestamp(dueDate),
+                "reminderEnabled" to reminderEnabled
+            )
+        ).addOnSuccessListener {
+            if (reminderEnabled) {
+                scheduleBillNotification(
+                    context,
+                    billId,
+                    "Updated Bill",
+                    "\"$name\" of Ksh ${"%.2f".format(amount)} is due soon!",
+                    dueDate
+                )
+            }
+        }
+    }
+
+    fun updateBill(
+        context: Context,
+        billId: String,
+        name: String,
+        amount: Double,
+        dueDate: LocalDate
+    ) {
+        val updates = mapOf(
+            "name" to name,
+            "amount" to amount,
+            "dueDate" to Timestamp(Date.from(dueDate.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+        )
+        firestore.collection("bills").document(billId).update(updates)
+    }
 
 }

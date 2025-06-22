@@ -18,6 +18,7 @@ import com.example.pocket.ui.screens.ExpenseTrackerScreen
 import com.example.pocket.ui.screens.FinancialGoalsScreen
 import com.example.pocket.ui.screens.FinancialReportScreen
 import com.example.pocket.ui.screens.HistoryScreen
+import com.example.pocket.ui.screens.InvestmentScreen
 import com.example.pocket.ui.screens.SplashScreen
 import com.example.pocket.ui.screens.auth.ForgotPasswordScreen
 import com.example.pocket.ui.screens.auth.LoginScreen
@@ -27,6 +28,7 @@ import com.example.pocket.ui.screens.auth.SignUpScreen
 import com.example.pocket.viewmodels.BillReminderViewModel
 import com.example.pocket.viewmodels.BudgetViewModel
 import com.example.pocket.viewmodels.GoalsViewModel
+import com.example.pocket.viewmodels.InvestmentViewModel
 
 
 @ExperimentalMaterial3Api
@@ -91,6 +93,9 @@ fun PocketNavHost(
                 ExpenseTrackerScreen(
                     onNavigateToDashboard = {
                         navController.popBackStack("dashboard", inclusive = false)
+                    },
+                    onBack = {
+                        navController.popBackStack()
                     }
                 )
             }
@@ -120,7 +125,15 @@ fun PocketNavHost(
                     }
                 )
             }
-
+            composable("investment_tracking") {
+                val viewModel: InvestmentViewModel = viewModel()
+                InvestmentScreen(
+                    viewModel = viewModel,
+                    onBack = {
+                        navController.popBackStack("dashboard", inclusive = false)
+                    }
+                )
+            }
         }
     }
 }
