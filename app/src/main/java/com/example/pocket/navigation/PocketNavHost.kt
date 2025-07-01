@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.pocket.ui.screens.AboutUsScreen
 import com.example.pocket.ui.screens.BillReminderScreen
 import com.example.pocket.ui.screens.BudgetPlanningScreen
 import com.example.pocket.ui.screens.BudgetSummaryScreen
@@ -134,6 +135,10 @@ fun PocketNavHost(
                     }
                 )
             }
+            composable("about_us") {
+                AboutUsScreen(onBack = { navController.popBackStack() })
+            }
+
         }
     }
 }
