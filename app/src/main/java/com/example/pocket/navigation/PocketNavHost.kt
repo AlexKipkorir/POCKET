@@ -138,7 +138,6 @@ fun PocketNavHost(
             composable("about_us") {
                 AboutUsScreen(onBack = { navController.popBackStack() })
             }
-
         }
     }
 }
