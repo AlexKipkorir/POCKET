@@ -28,3 +28,41 @@ Java HotSpot(TM) 64-Bit Server VM (build 23.0.2+7-58, mixed mode, sharing)
 [debug] [2025-07-02T11:03:24.576Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
 [debug] [2025-07-02T11:03:24.577Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","C:\\Users\\ALEX\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar","--host","127.0.0.1","--port",8085,"--websocket_port",9150,"--project_id","pocket-db5a9","--single_project_mode",true],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8085} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"C:\\\\Users\\\\ALEX\\\\.cache\\\\firebase\\\\emulators\\\\cloud-firestore-emulator-v1.19.8.jar\",\"--host\",\"127.0.0.1\",\"--port\",8085,\"--websocket_port\",9150,\"--project_id\",\"pocket-db5a9\",\"--single_project_mode\",true],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8085}"}}
 [info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[info] +  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[debug] [2025-07-02T11:04:33.135Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────────┬────────────────┬─────────────────────────────────┐
+│ Emulator       │ Host:Port      │ View in Emulator UI             │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth      │
+├────────────────┼────────────────┼─────────────────────────────────┤
+│ Firestore      │ 127.0.0.1:8085 │ http://127.0.0.1:4000/firestore │
+└────────────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2025-07-03T08:03:49.793Z] Received signal SIGHUP 1
+[info]  
+[info] i  emulators: Received SIGHUP for the first time. Starting a clean shutdown. 
+[info] i  emulators: Please wait for a clean shutdown or send the SIGHUP signal again to stop right now. 
+[info] i  Automatically exporting data using --export-on-exit "./emulator-data" please wait for the export to finish... 
+[debug] [2025-07-03T08:03:50.654Z] >>> [apiv2][query] GET http://127.0.0.1:4400/ [none]
+[debug] [2025-07-03T08:03:50.952Z] <<< [apiv2][status] GET http://127.0.0.1:4400/ 200
+[debug] [2025-07-03T08:03:50.953Z] <<< [apiv2][body] GET http://127.0.0.1:4400/ {"version":"14.9.0","origins":["http://127.0.0.1:4400","http://[::1]:4400"],"host":"127.0.0.1","port":4400}
+[info] i  Found running emulator hub for project pocket-db5a9 at http://127.0.0.1:4400 
+[info] i  Exporting data to: C:\Users\ALEX\AndroidStudioProjects\POCKET\emulator-data 
+[debug] [2025-07-03T08:03:51.032Z] >>> [apiv2][query] GET http://127.0.0.1:4400/ [none]
+[debug] [2025-07-03T08:03:51.062Z] <<< [apiv2][status] GET http://127.0.0.1:4400/ 200
+[debug] [2025-07-03T08:03:51.063Z] <<< [apiv2][body] GET http://127.0.0.1:4400/ {"version":"14.9.0","origins":["http://127.0.0.1:4400","http://[::1]:4400"],"host":"127.0.0.1","port":4400}
+[debug] [2025-07-03T08:03:51.066Z] >>> [apiv2][query] POST http://127.0.0.1:4400/_admin/export [none]
+[debug] [2025-07-03T08:03:51.067Z] >>> [apiv2][body] POST http://127.0.0.1:4400/_admin/export {"path":"C:\\Users\\ALEX\\AndroidStudioProjects\\POCKET\\emulator-data","initiatedBy":"exit"}
+[info] i  emulators: Received export request. Exporting data to C:\Users\ALEX\AndroidStudioProjects\POCKET\emulator-data. 
+[debug] [2025-07-03T08:03:51.170Z] >>> [apiv2][query] POST http://127.0.0.1:8085/emulator/v1/projects/pocket-db5a9:export [none]
+[debug] [2025-07-03T08:03:51.171Z] >>> [apiv2][body] POST http://127.0.0.1:8085/emulator/v1/projects/pocket-db5a9:export {"database":"projects/pocket-db5a9/databases/(default)","export_directory":"firebase-export-1751529831120tKzPYk","export_name":"firestore_export"}
