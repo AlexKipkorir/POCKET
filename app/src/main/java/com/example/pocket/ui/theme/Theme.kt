@@ -1,38 +1,47 @@
 package com.example.pocket.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.platform.LocalContext
-import com.example.pocket.ui.theme.Typography
 
-private val Crimson = Color(0xFF990000)
-private val white = Color(0xFFFFFFFF)
-
-val crimson = Color(0xFFB71C1C) // deep red
-
-
-private val PocketColorScheme = darkColorScheme(
-    primary = Crimson,
-    onPrimary = White,
-    background = White,
-    onBackground = Crimson
-)
+val PrimaryRed = Color(0xFFDB143C)
+val BackgroundLight = Color(0xFFF8F6F6)
+val BackgroundDark = Color(0xFF211114)
+val CardDark = Color(0xFF2D1A1D)
+val TextLight = Color(0xFF181112)
+val TextMuted = Color(0xFF896169)
 
 @Composable
-fun PocketTheme(content: @Composable () -> Unit) {
+fun PocketTheme(
+    darkTheme: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (darkTheme) {
+        androidx.compose.material3.darkColorScheme(
+            primary = PrimaryRed,
+            background = BackgroundDark,
+            surface = CardDark,
+            onBackground = Color.White,
+            onSurface = Color.White,
+            surfaceVariant = Color(0xFF3A2528)
+        )
+    } else {
+        androidx.compose.material3.lightColorScheme(
+            primary = PrimaryRed,
+            background = BackgroundLight,
+            surface = Color.White,
+            onBackground = TextLight,
+            onSurface = TextLight,
+            surfaceVariant = Color(0xFFF5F0F1)
+        )
+    }
+
     MaterialTheme(
-        colorScheme = PocketColorScheme,
-        typography = Typography(),
+        colorScheme = colorScheme,
+        typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }

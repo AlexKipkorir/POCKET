@@ -21,10 +21,11 @@ import com.example.pocket.ui.screens.FinancialReportScreen
 import com.example.pocket.ui.screens.HistoryScreen
 import com.example.pocket.ui.screens.InvestmentScreen
 import com.example.pocket.ui.screens.SplashScreen
+import com.example.pocket.ui.screens.auth.EmailVerificationScreen
 import com.example.pocket.ui.screens.auth.ForgotPasswordScreen
 import com.example.pocket.ui.screens.auth.LoginScreen
 import com.example.pocket.ui.screens.auth.OTPSelectionScreen
-import com.example.pocket.ui.screens.auth.OTPVerificationScreen
+import com.example.pocket.ui.screens.auth.PhoneOTPVerificationScreen
 import com.example.pocket.ui.screens.auth.SignUpScreen
 import com.example.pocket.viewmodels.BillReminderViewModel
 import com.example.pocket.viewmodels.BudgetViewModel
@@ -53,20 +54,32 @@ fun PocketNavHost(
                 OTPSelectionScreen(navController, email, phone)
             }
 
-            composable(
-                "otp_verify/{method}/{target}/{fullName}/{email}"
-            ) { backStack ->
-                val method = backStack.arguments?.getString("method") ?: "email"
-                val target = backStack.arguments?.getString("target") ?: ""
-                val fullName = backStack.arguments?.getString("fullName") ?: ""
-                val email = backStack.arguments?.getString("email") ?: ""
+            // In your NavGraph.kt or similar
+            composable("phone_otp_verify/{phone}/{verificationId}/{fullName}/{email}") { backStackEntry ->
+                val phone = backStackEntry.arguments?.getString("phone") ?: ""
+                val verificationId = backStackEntry.arguments?.getString("verificationId") ?: ""
+                val fullName = backStackEntry.arguments?.getString("fullName") ?: ""
+                val email = backStackEntry.arguments?.getString("email") ?: ""
 
-                OTPVerificationScreen(
+                PhoneOTPVerificationScreen(
                     navController = navController,
-                    method = method,
-                    target = target,
+                    phone = phone,
+                    verificationId = verificationId,
                     fullName = fullName,
                     email = email
+                )
+            }
+
+            composable("email_verification/{email}/{fullName}/{phone}") { backStackEntry ->
+                val email = backStackEntry.arguments?.getString("email") ?: ""
+                val fullName = backStackEntry.arguments?.getString("fullName") ?: ""
+                val phone = backStackEntry.arguments?.getString("phone") ?: ""
+
+                EmailVerificationScreen(
+                    navController = navController,
+                    email = email,
+                    fullName = fullName,
+                    phone = phone
                 )
             }
 

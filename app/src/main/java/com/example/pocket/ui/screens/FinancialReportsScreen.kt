@@ -62,7 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.example.pocket.model.BudgetCategory
-import com.example.pocket.ui.theme.crimson
+import com.example.pocket.ui.theme.PrimaryRed
 import java.io.File
 import java.time.Month
 import java.time.Year
@@ -117,7 +117,7 @@ fun FinancialReportScreen(onNavigateToDashboard: () -> Unit) {
             TopAppBar(
                 title = { Text("Financial Reports") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = crimson,
+                    containerColor = PrimaryRed,
                     titleContentColor = Color.White
                 )
             )
@@ -134,7 +134,7 @@ fun FinancialReportScreen(onNavigateToDashboard: () -> Unit) {
                 "Financial Reports",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
-                color = crimson
+                color = PrimaryRed
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
@@ -325,7 +325,7 @@ fun ReportCard(
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
-            Icon(icon, contentDescription = null, tint = crimson, modifier = Modifier.size(40.dp))
+            Icon(icon, contentDescription = null, tint = PrimaryRed, modifier = Modifier.size(40.dp))
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
