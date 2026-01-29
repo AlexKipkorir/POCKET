@@ -1,4 +1,4 @@
-package com.example.pocket.ui.screens
+package com.example.pocket.ui.screens.spend
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

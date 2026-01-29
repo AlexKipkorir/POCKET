@@ -9,13 +9,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pocket.navigation.BottomNavigationBar
 import com.example.pocket.navigation.PocketNavHost
 import com.example.pocket.ui.theme.PocketTheme
+import com.example.pocket.utils.createBillReminderChannel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.pocket.utils.createBillReminderChannel
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -39,10 +41,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PocketApp() {
     val navController = rememberNavController()
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val showBottomNav = currentRoute in setOf("home", "spend", "plan", "goals", "profile")
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            if (showBottomNav) {
+                BottomNavigationBar(navController = navController)
+            }
+        }
     ) { padding ->
         PocketNavHost(
             navController = navController,

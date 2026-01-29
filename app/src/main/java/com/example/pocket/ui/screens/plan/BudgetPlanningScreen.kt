@@ -1,4 +1,4 @@
-package com.example.pocket.ui.screens
+package com.example.pocket.ui.screens.plan
 
 import android.widget.Toast
 import androidx.compose.foundation.background

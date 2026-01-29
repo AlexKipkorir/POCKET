@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import com.example.pocket.R
 import com.example.pocket.model.BillReminder
 import com.example.pocket.model.BillReminderUiState
-import com.example.pocket.ui.screens.BillReminderReceiver
+import com.example.pocket.ui.screens.spend.BillReminderReceiver
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

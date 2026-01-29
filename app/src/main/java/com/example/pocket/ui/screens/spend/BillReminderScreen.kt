@@ -1,4 +1,4 @@
-package com.example.pocket.ui.screens
+package com.example.pocket.ui.screens.spend
 
 import android.app.DatePickerDialog
 import android.content.Context

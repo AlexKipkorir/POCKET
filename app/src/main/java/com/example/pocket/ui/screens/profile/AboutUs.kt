@@ -1,4 +1,4 @@
-package com.example.pocket.ui.screens
+package com.example.pocket.ui.screens.profile
 
 import android.content.Context
 import android.content.Intent

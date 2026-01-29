@@ -10,16 +10,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.pocket.ui.screens.AboutUsScreen
-import com.example.pocket.ui.screens.BillReminderScreen
-import com.example.pocket.ui.screens.BudgetPlanningScreen
-import com.example.pocket.ui.screens.BudgetSummaryScreen
-import com.example.pocket.ui.screens.DashboardScreen
-import com.example.pocket.ui.screens.ExpenseTrackerScreen
-import com.example.pocket.ui.screens.FinancialGoalsScreen
-import com.example.pocket.ui.screens.FinancialReportScreen
-import com.example.pocket.ui.screens.HistoryScreen
-import com.example.pocket.ui.screens.InvestmentScreen
+import com.example.pocket.ui.screens.profile.AboutUsScreen
+import com.example.pocket.ui.screens.spend.BillReminderScreen
+import com.example.pocket.ui.screens.plan.BudgetPlanningScreen
+import com.example.pocket.ui.screens.plan.BudgetSummaryScreen
+import com.example.pocket.ui.screens.Dashboard.DashboardScreen
+import com.example.pocket.ui.screens.goals.FinancialGoalsScreen
+import com.example.pocket.ui.screens.plan.FinancialReportScreen
+import com.example.pocket.ui.screens.spend.HistoryScreen
+import com.example.pocket.ui.screens.goals.InvestmentScreen
 import com.example.pocket.ui.screens.SplashScreen
 import com.example.pocket.ui.screens.auth.EmailVerificationScreen
 import com.example.pocket.ui.screens.auth.ForgotPasswordScreen
@@ -27,6 +26,9 @@ import com.example.pocket.ui.screens.auth.LoginScreen
 import com.example.pocket.ui.screens.auth.OTPSelectionScreen
 import com.example.pocket.ui.screens.auth.PhoneOTPVerificationScreen
 import com.example.pocket.ui.screens.auth.SignUpScreen
+import com.example.pocket.ui.screens.spend.AddExpenseScreen
+import com.example.pocket.ui.screens.spend.ExpenseHistoryScreen
+import com.example.pocket.ui.screens.spend.SpendScreen
 import com.example.pocket.viewmodels.BillReminderViewModel
 import com.example.pocket.viewmodels.BudgetViewModel
 import com.example.pocket.viewmodels.GoalsViewModel
@@ -84,6 +86,7 @@ fun PocketNavHost(
             }
 
             composable("dashboard") { DashboardScreen(navController) }
+            composable(route = "spend") { SpendScreen(navController) }
             composable("budget_planning") {
                 BudgetPlanningScreen(
                     navController = navController,
@@ -103,15 +106,14 @@ fun PocketNavHost(
             composable("history") {
                 HistoryScreen(onBack = { navController.popBackStack() })
             }
-            composable("expense_tracker") {
-                ExpenseTrackerScreen(
-                    onNavigateToDashboard = {
-                        navController.popBackStack("dashboard", inclusive = false)
-                    },
-                    onBack = {
-                        navController.popBackStack()
-                    }
+            composable("add_expense") {
+                AddExpenseScreen(
+                    navController = navController,
+                    viewModel = viewModel()
                 )
+            }
+            composable("expense_history") {
+                ExpenseHistoryScreen(navController = navController)
             }
             composable("financial_reports") {
                 FinancialReportScreen(

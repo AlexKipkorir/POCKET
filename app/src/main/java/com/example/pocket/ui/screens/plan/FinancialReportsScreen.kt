@@ -1,4 +1,4 @@
-package com.example.pocket.ui.screens
+package com.example.pocket.ui.screens.plan
 
 import android.content.Context
 import android.content.Intent
@@ -69,7 +69,6 @@ import java.time.Year
 import com.example.pocket.utils.getColorForCategory
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-
 
 
 @RequiresApi(Build.VERSION_CODES.O)

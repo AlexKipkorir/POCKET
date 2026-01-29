@@ -1,4 +1,4 @@
-package com.example.pocket.ui.screens
+package com.example.pocket.ui.screens.spend
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.pocket.R
-import com.example.pocket.utils.createBillReminderChannel
 
 class BillReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

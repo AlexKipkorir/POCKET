@@ -1,4 +1,4 @@
-package com.example.pocket.ui.screens
+package com.example.pocket.ui.screens.goals
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

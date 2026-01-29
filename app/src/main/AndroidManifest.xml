@@ -37,7 +37,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <receiver
-            android:name="com.example.pocket.ui.screens.BillReminderReceiver"
+            android:name="com.example.pocket.ui.screens.spend.BillReminderReceiver"
             android:exported="false" />
     </application>
 </manifest>
