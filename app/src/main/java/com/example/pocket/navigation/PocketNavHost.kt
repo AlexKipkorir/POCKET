@@ -17,7 +17,6 @@ import com.example.pocket.ui.screens.plan.BudgetSummaryScreen
 import com.example.pocket.ui.screens.Dashboard.DashboardScreen
 import com.example.pocket.ui.screens.goals.FinancialGoalsScreen
 import com.example.pocket.ui.screens.plan.FinancialReportScreen
-import com.example.pocket.ui.screens.spend.HistoryScreen
 import com.example.pocket.ui.screens.goals.InvestmentScreen
 import com.example.pocket.ui.screens.SplashScreen
 import com.example.pocket.ui.screens.auth.EmailVerificationScreen
@@ -26,6 +25,7 @@ import com.example.pocket.ui.screens.auth.LoginScreen
 import com.example.pocket.ui.screens.auth.OTPSelectionScreen
 import com.example.pocket.ui.screens.auth.PhoneOTPVerificationScreen
 import com.example.pocket.ui.screens.auth.SignUpScreen
+import com.example.pocket.ui.screens.spend.ActivityScreen
 import com.example.pocket.ui.screens.spend.AddExpenseScreen
 import com.example.pocket.ui.screens.spend.ExpenseHistoryScreen
 import com.example.pocket.ui.screens.spend.SpendScreen
@@ -46,6 +46,9 @@ fun PocketNavHost(
             navController = navController,
             startDestination = "splash"
         ) {
+            //---------------------------------------------
+            // AUTHENTICATION
+            //---------------------------------------------
             composable("splash") { SplashScreen(navController) }
             composable("login") { LoginScreen(navController) }
             composable("signup") { SignUpScreen(navController) }
@@ -85,8 +88,45 @@ fun PocketNavHost(
                 )
             }
 
+            //---------------------------------------------------------------
+            // MAIN SCREENS
+            //---------------------------------------------------------------
+
+            //---------------------------------------------------------------
+            // DASHBOARD
+            //---------------------------------------------------------------
             composable("dashboard") { DashboardScreen(navController) }
+
+            //---------------------------------------------------------------
+            // SPEND
+            //---------------------------------------------------------------
             composable(route = "spend") { SpendScreen(navController) }
+
+            composable("history") {
+                ActivityScreen(
+                    navController = navController,
+                    viewModel = viewModel()
+                )
+            }
+            composable("add_expense") {
+                AddExpenseScreen(
+                    navController = navController,
+                    viewModel = viewModel()
+                )
+            }
+            composable("expense_history") {
+                ExpenseHistoryScreen(navController = navController)
+            }
+            composable("investment_tracking") {
+                val viewModel: InvestmentViewModel = viewModel()
+                InvestmentScreen(
+                    viewModel = viewModel,
+                    onBack = {
+                        navController.popBackStack("dashboard", inclusive = false)
+                    }
+                )
+            }
+
             composable("budget_planning") {
                 BudgetPlanningScreen(
                     navController = navController,
@@ -103,18 +143,7 @@ fun PocketNavHost(
                     onBack = { navController.popBackStack() }
                 )
             }
-            composable("history") {
-                HistoryScreen(onBack = { navController.popBackStack() })
-            }
-            composable("add_expense") {
-                AddExpenseScreen(
-                    navController = navController,
-                    viewModel = viewModel()
-                )
-            }
-            composable("expense_history") {
-                ExpenseHistoryScreen(navController = navController)
-            }
+
             composable("financial_reports") {
                 FinancialReportScreen(
                     onNavigateToDashboard = {
@@ -134,22 +163,13 @@ fun PocketNavHost(
             }
             composable("bill_reminders") {
                 val viewModel: BillReminderViewModel = viewModel()
+
                 BillReminderScreen(
-                    viewModel = viewModel,
-                    onBackToDashboard = {
-                        navController.popBackStack("dashboard", inclusive = false)
-                    }
+                    navController = navController,
+                    viewModel = viewModel
                 )
             }
-            composable("investment_tracking") {
-                val viewModel: InvestmentViewModel = viewModel()
-                InvestmentScreen(
-                    viewModel = viewModel,
-                    onBack = {
-                        navController.popBackStack("dashboard", inclusive = false)
-                    }
-                )
-            }
+
             composable("about_us") {
                 AboutUsScreen(onBack = { navController.popBackStack() })
             }
