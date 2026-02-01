@@ -25,6 +25,8 @@ import com.example.pocket.ui.screens.auth.LoginScreen
 import com.example.pocket.ui.screens.auth.OTPSelectionScreen
 import com.example.pocket.ui.screens.auth.PhoneOTPVerificationScreen
 import com.example.pocket.ui.screens.auth.SignUpScreen
+import com.example.pocket.ui.screens.plan.BillPlanningScreen
+import com.example.pocket.ui.screens.plan.PlanScreen
 import com.example.pocket.ui.screens.spend.ActivityScreen
 import com.example.pocket.ui.screens.spend.AddExpenseScreen
 import com.example.pocket.ui.screens.spend.ExpenseHistoryScreen
@@ -127,28 +129,29 @@ fun PocketNavHost(
                 )
             }
 
-            composable("budget_planning") {
+            //-----------------------------------------------------
+            // PLAN
+            //-----------------------------------------------------
+            composable(route = "plan") { PlanScreen(navController) }
+
+            composable(route = "bill_planning") { BillPlanningScreen( navController) }
+
+            composable("budgeting") {
                 BudgetPlanningScreen(
-                    navController = navController,
-                    onNavigateToDashboard = { navController.navigate("dashboard") },
-                    onBudgetSet = { newBudget ->
-                    }
+                    navController = navController
                 )
             }
-            composable("summary") {
+            composable("monthly_summary") {
                 val viewModel: BudgetViewModel = viewModel()
                 BudgetSummaryScreen(
                     viewModel = viewModel,
-                    onNavigateToHistory = { navController.navigate("history") },
-                    onBack = { navController.popBackStack() }
+                    navController = navController
                 )
             }
 
-            composable("financial_reports") {
+            composable("monthly_report") {
                 FinancialReportScreen(
-                    onNavigateToDashboard = {
-                        navController.popBackStack("dashboard", inclusive = false)
-                    }
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable("financial_goals") {
