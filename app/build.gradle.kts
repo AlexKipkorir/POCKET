@@ -80,7 +80,16 @@ dependencies {
     implementation(libs.compose.v1130)
     implementation(libs.core)
     implementation(libs.play.services.auth)
-    implementation ("androidx.compose.material:material:1.6.6")
+    implementation ("androidx.compose.material:material:1.10.2")
+    implementation("androidx.compose.material3:material3:1.4.0")
+    implementation("androidx.compose.material3:material3-window-size-class:1.4.0")
+
+    // Lifecycle for coroutines
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+
+    // Date picker
+    implementation("androidx.compose.material3:material3:1.4.0")
 //    implementation("com.github.tehras:charts:1.0.0-beta01")
 //    implementation("com.patrykandpatrick.vico:compose:1.13.0")
 //    implementation("com.patrykandpatrick.vico:core:1.13.0")

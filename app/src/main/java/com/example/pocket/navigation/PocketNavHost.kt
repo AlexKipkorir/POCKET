@@ -25,6 +25,7 @@ import com.example.pocket.ui.screens.auth.LoginScreen
 import com.example.pocket.ui.screens.auth.OTPSelectionScreen
 import com.example.pocket.ui.screens.auth.PhoneOTPVerificationScreen
 import com.example.pocket.ui.screens.auth.SignUpScreen
+import com.example.pocket.ui.screens.debt.DebtManagementScreen
 import com.example.pocket.ui.screens.plan.BillPlanningScreen
 import com.example.pocket.ui.screens.plan.PlanScreen
 import com.example.pocket.ui.screens.spend.ActivityScreen
@@ -154,6 +155,13 @@ fun PocketNavHost(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
+
+            composable("debt_management") {
+                DebtManagementScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
             composable("financial_goals") {
                 val viewModel: GoalsViewModel = viewModel()
 
