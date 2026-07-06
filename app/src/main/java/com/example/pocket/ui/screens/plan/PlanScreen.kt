@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CardMembership
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.TrackChanges
@@ -44,7 +43,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,6 +65,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
+
+/** Amber used for the "overspent" budget status badge. */
+private val WarningAmber = Color(0xFFF59E0B)
 
 data class PlanningTool(
     val id: String,
@@ -106,7 +107,6 @@ fun PlanScreen(navController: NavController) {
     var totalSpent by remember { mutableDoubleStateOf(2200.0) }
     var totalPlanned by remember { mutableDoubleStateOf(3500.0) }
     var budgetUtilization by remember { mutableDoubleStateOf(63.0) }
-    var isLoading by remember { mutableStateOf(true) }
     var currentInsightIndex by remember { mutableIntStateOf(0) }
 
     val responsivePadding = calculateResponsivePadding()
@@ -150,12 +150,12 @@ fun PlanScreen(navController: NavController) {
     // Auto-rotate insights every 2 seconds
     LaunchedEffect(Unit) {
         while (true) {
-            delay(2000) // 2 seconds
+            delay(2000)
             currentInsightIndex = (currentInsightIndex + 1) % allInsights.size
         }
     }
 
-    // Load plan data
+    // Load plan data, falling back to the defaults above if the doc is missing or the fetch fails
     LaunchedEffect(user?.uid) {
         user?.let {
             try {
@@ -168,8 +168,7 @@ fun PlanScreen(navController: NavController) {
             } catch (e: Exception) {
                 // Use default values
             }
-            isLoading = false
-        } ?: run { isLoading = false }
+        }
     }
 
     val availableAmount = totalPlanned - totalSpent
@@ -269,27 +268,24 @@ fun PlanScreen(navController: NavController) {
                             vertical = responsivePadding
                         )
                 ) {
-                    // Top Navigation Row - Centered title with notifications on right
+                    // Top Navigation Row - Centered title with settings on right
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Empty spacer on left to balance the notifications button
+                        // Empty spacer on left to balance the settings button
                         Spacer(modifier = Modifier.size(40.dp))
 
-                        // Centered title
                         Text(
                             text = "Plan",
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 32.sp,
-                            lineHeight = 36.sp,
-                            modifier = Modifier.align(Alignment.CenterVertically)
+                            lineHeight = 36.sp
                         )
 
-                        // Notifications button
                         IconButton(
                             onClick = { navController.navigate("spend_settings") },
                             modifier = Modifier.size(40.dp)
@@ -355,19 +351,12 @@ fun PlanScreen(navController: NavController) {
                         .padding(horizontal = responsivePadding * 1.5f),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Section Header
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Planning Tools",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 18.sp
-                        )
+                        SectionTitle(text = "Planning Tools")
 
                         Text(
                             text = "View All",
@@ -379,7 +368,6 @@ fun PlanScreen(navController: NavController) {
                         )
                     }
 
-                    // Tools Grid (2 columns)
                     PlanningToolsGrid(
                         tools = planningTools,
                         navController = navController,
@@ -401,20 +389,13 @@ fun PlanScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Insights",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 18.sp
-                        )
+                        SectionTitle(text = "Insights")
 
-                        // Insight counter indicator
+                        // Dots indicator
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            // Dots indicator
                             repeat(allInsights.size) { index ->
                                 Box(
                                     modifier = Modifier
@@ -429,7 +410,6 @@ fun PlanScreen(navController: NavController) {
                         }
                     }
 
-                    // Single auto-rotating insight card
                     InsightCardItem(
                         insight = allInsights[currentInsightIndex],
                         modifier = Modifier.fillMaxWidth()
@@ -492,6 +472,19 @@ fun PlanScreen(navController: NavController) {
             }
         }
     }
+}
+
+/** Bold section heading used above the Planning Tools and Insights lists. */
+@Composable
+private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onBackground,
+        fontSize = 18.sp,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -619,7 +612,7 @@ fun BudgetUtilizationCard(
                         .clip(RoundedCornerShape(50.dp))
                         .background(
                             if (isOnTrack) PrimaryRed.copy(alpha = 0.05f)
-                            else Color(0xFFF59E0B).copy(alpha = 0.05f)
+                            else WarningAmber.copy(alpha = 0.05f)
                         )
                         .padding(horizontal = 10.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
@@ -628,7 +621,7 @@ fun BudgetUtilizationCard(
                         text = if (isOnTrack) "ON TRACK" else "OVERSPENT",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = if (isOnTrack) PrimaryRed else Color(0xFFF59E0B),
+                        color = if (isOnTrack) PrimaryRed else WarningAmber,
                         fontSize = 10.sp,
                         letterSpacing = 0.5.sp
                     )
@@ -653,7 +646,6 @@ fun PlanningToolsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // First row: first 3 items
             tools.take(3).forEach { tool ->
                 PlanningToolCard(
                     tool = tool,
@@ -667,7 +659,6 @@ fun PlanningToolsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Second row: last 3 items
             tools.drop(3).forEach { tool ->
                 PlanningToolCard(
                     tool = tool,
@@ -772,7 +763,6 @@ fun InsightCardItem(
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Icon
             Icon(
                 imageVector = insight.icon,
                 contentDescription = insight.title,
@@ -780,7 +770,6 @@ fun InsightCardItem(
                 modifier = Modifier.size(24.dp)
             )
 
-            // Content
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.weight(1f)

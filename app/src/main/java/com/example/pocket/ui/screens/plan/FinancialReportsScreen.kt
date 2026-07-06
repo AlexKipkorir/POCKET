@@ -2,6 +2,7 @@ package com.example.pocket.ui.screens.plan
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
@@ -30,10 +31,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
-import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,7 +52,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,22 +65,26 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pocket.ui.theme.PocketTheme
 import com.example.pocket.ui.theme.PrimaryRed
 import com.example.pocket.utils.ScreenConfig
 import com.example.pocket.utils.calculateResponsivePadding
 import com.example.pocket.utils.rememberWindowSize
+import com.example.pocket.viewmodels.ExpenditureCategory
 import com.example.pocket.viewmodels.FinancialReportViewModel
+import com.example.pocket.viewmodels.MonthlyInsight
+import com.example.pocket.viewmodels.MonthlyReport
+import com.example.pocket.viewmodels.SpendingTrend
 import java.io.File
 import java.text.DecimalFormat
 import java.time.Month
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.pocket.ui.theme.PocketTheme
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,7 +98,6 @@ fun FinancialReportScreen(
     val windowSize = rememberWindowSize()
 
     var showMonthDropdown by remember { mutableStateOf(false) }
-    var showYearDropdown by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
 
     // Collect state flows with lifecycle awareness
@@ -103,10 +105,6 @@ fun FinancialReportScreen(
     val expenditureBreakdown by viewModel.expenditureBreakdown.collectAsStateWithLifecycle()
     val monthlyInsights by viewModel.monthlyInsights.collectAsStateWithLifecycle()
     val spendingTrends by viewModel.spendingTrends.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        // Initial load
-    }
 
     Scaffold(
         topBar = {
@@ -275,9 +273,56 @@ fun FinancialReportScreen(
     }
 }
 
+/**
+ * A small uppercase, bold, letter-spaced label used for the recurring
+ * "NET BALANCE" / "TOTAL INCOME" / "TOTAL SPENT" / trend-month style of text.
+ */
+@Composable
+private fun UppercaseLabel(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold,
+        color = color,
+        letterSpacing = 0.1.sp,
+        modifier = modifier
+    )
+}
+
+/** The small uppercase eyebrow label ("EXPENDITURE", "ANALYSIS", "MONTHLY INSIGHTS"). */
+@Composable
+private fun SectionEyebrow(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+        letterSpacing = 0.1.sp,
+        modifier = modifier
+    )
+}
+
+/** Eyebrow + large title pair used to head the Expenditure and Spending Trend sections. */
+@Composable
+private fun SectionHeading(eyebrow: String, title: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        SectionEyebrow(eyebrow)
+        Text(
+            text = title,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+
 @Composable
 fun NetBalanceCard(
-    report: com.example.pocket.viewmodels.MonthlyReport,
+    report: MonthlyReport,
     modifier: Modifier = Modifier
 ) {
     val animatedSavingsPercentage by animateFloatAsState(
@@ -320,13 +365,7 @@ fun NetBalanceCard(
                     verticalAlignment = Alignment.Top
                 ) {
                     Column {
-                        Text(
-                            text = "NET BALANCE",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White.copy(alpha = 0.7f),
-                            letterSpacing = 0.1.sp
-                        )
+                        UppercaseLabel(text = "NET BALANCE", color = Color.White.copy(alpha = 0.7f))
                         Text(
                             text = formatCurrency(report.netBalance),
                             fontSize = 32.sp,
@@ -382,13 +421,7 @@ fun NetBalanceCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(
-                            text = "TOTAL INCOME",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White.copy(alpha = 0.6f),
-                            letterSpacing = 0.1.sp
-                        )
+                        UppercaseLabel(text = "TOTAL INCOME", color = Color.White.copy(alpha = 0.6f))
                         Text(
                             text = formatCurrency(report.totalIncome),
                             fontSize = 20.sp,
@@ -398,13 +431,7 @@ fun NetBalanceCard(
                     }
 
                     Column {
-                        Text(
-                            text = "TOTAL SPENT",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White.copy(alpha = 0.6f),
-                            letterSpacing = 0.1.sp
-                        )
+                        UppercaseLabel(text = "TOTAL SPENT", color = Color.White.copy(alpha = 0.6f))
                         Text(
                             text = formatCurrency(report.totalSpent),
                             fontSize = 20.sp,
@@ -420,7 +447,7 @@ fun NetBalanceCard(
 
 @Composable
 fun MonthlyInsightsSection(
-    insights: List<com.example.pocket.viewmodels.MonthlyInsight>,
+    insights: List<MonthlyInsight>,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -442,13 +469,7 @@ fun MonthlyInsightsSection(
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "MONTHLY INSIGHTS",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                letterSpacing = 0.1.sp
-            )
+            SectionEyebrow("MONTHLY INSIGHTS")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -465,7 +486,7 @@ fun MonthlyInsightsSection(
 }
 
 @Composable
-fun InsightCard(insight: com.example.pocket.viewmodels.MonthlyInsight) {
+fun InsightCard(insight: MonthlyInsight) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -521,7 +542,7 @@ fun InsightCard(insight: com.example.pocket.viewmodels.MonthlyInsight) {
 
 @Composable
 fun ExpenditureBreakdownSection(
-    breakdown: List<com.example.pocket.viewmodels.ExpenditureCategory>,
+    breakdown: List<ExpenditureCategory>,
     totalPercentage: Double,
     modifier: Modifier = Modifier
 ) {
@@ -532,36 +553,20 @@ fun ExpenditureBreakdownSection(
     )
 
     // Read composable values OUTSIDE Canvas
-    val backgroundCircleColor =
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+    val backgroundCircleColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
     val progressColor = MaterialTheme.colorScheme.primary
     val textColor = MaterialTheme.colorScheme.onSurface
 
     val strokeWidth = 6.dp
 
     Column(modifier = modifier) {
-
         // Section header with circular progress
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
         ) {
-            Column {
-                Text(
-                    text = "EXPENDITURE",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    letterSpacing = 0.1.sp
-                )
-                Text(
-                    text = "Breakdown",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-            }
+            SectionHeading(eyebrow = "EXPENDITURE", title = "Breakdown")
 
             // Circular progress indicator
             Box(
@@ -569,7 +574,6 @@ fun ExpenditureBreakdownSection(
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-
                     val strokePx = strokeWidth.toPx()
                     val radius = size.minDimension / 2 - strokePx / 2
 
@@ -617,7 +621,7 @@ fun ExpenditureBreakdownSection(
 }
 
 @Composable
-fun ExpenditureItem(category: com.example.pocket.viewmodels.ExpenditureCategory) {
+fun ExpenditureItem(category: ExpenditureCategory) {
     val animatedPercentage by animateFloatAsState(
         targetValue = category.percentage.toFloat(),
         animationSpec = tween(durationMillis = 800),
@@ -686,7 +690,7 @@ fun ExpenditureItem(category: com.example.pocket.viewmodels.ExpenditureCategory)
 
 @Composable
 fun SpendingTrendSection(
-    trends: List<com.example.pocket.viewmodels.SpendingTrend>,
+    trends: List<SpendingTrend>,
     modifier: Modifier = Modifier
 ) {
     val animatedHeights = trends.mapIndexed { index, trend ->
@@ -698,22 +702,7 @@ fun SpendingTrendSection(
     }
 
     Column(modifier = modifier) {
-        // Section header
-        Column {
-            Text(
-                text = "ANALYSIS",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                letterSpacing = 0.1.sp
-            )
-            Text(
-                text = "Spending Trend",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
+        SectionHeading(eyebrow = "ANALYSIS", title = "Spending Trend")
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -765,16 +754,13 @@ fun SpendingTrendSection(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 trends.forEach { trend ->
-                    Text(
+                    UppercaseLabel(
                         text = trend.month,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
                         color = if (trend.isCurrent) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                        },
-                        letterSpacing = 0.1.sp
+                        }
                     )
                 }
             }
@@ -868,7 +854,10 @@ fun ScreenConfig.ScreenType.isCompact(): Boolean {
     return this == ScreenConfig.ScreenType.Compact
 }
 
-// PDF Generation functions (update these as needed)
+/**
+ * Renders [title] and [content] into a single-page PDF and returns a shareable
+ * content [Uri] via [FileProvider].
+ */
 fun generateFinancialReportPdf(
     context: Context,
     title: String,
@@ -918,7 +907,6 @@ fun shareFinancialReport(
     context.startActivity(Intent.createChooser(intent, "Share Report"))
 }
 
-
 @Preview(showBackground = true, name = "Light Mode")
 @Composable
 fun FinancialReportScreenPreview_Light() {
@@ -927,7 +915,7 @@ fun FinancialReportScreenPreview_Light() {
     }
 }
 
-@Preview(showBackground = true, name = "Dark Mode", uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun FinancialReportScreenPreview_Dark() {
     PocketTheme(darkTheme = true) {
