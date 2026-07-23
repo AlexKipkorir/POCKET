@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.pocket.model.SampleGoals
 import com.example.pocket.ui.screens.profile.AboutUsScreen
 import com.example.pocket.ui.screens.spend.BillReminderScreen
 import com.example.pocket.ui.screens.plan.BudgetPlanningScreen
@@ -26,6 +27,7 @@ import com.example.pocket.ui.screens.auth.OTPSelectionScreen
 import com.example.pocket.ui.screens.auth.PhoneOTPVerificationScreen
 import com.example.pocket.ui.screens.auth.SignUpScreen
 import com.example.pocket.ui.screens.debt.DebtManagementScreen
+import com.example.pocket.ui.screens.goals.GoalDetailScreen
 import com.example.pocket.ui.screens.plan.BillPlanningScreen
 import com.example.pocket.ui.screens.plan.PlanScreen
 import com.example.pocket.ui.screens.spend.ActivityScreen
@@ -62,7 +64,6 @@ fun PocketNavHost(
                 OTPSelectionScreen(navController, email, phone)
             }
 
-            // In your NavGraph.kt or similar
             composable("phone_otp_verify/{phone}/{verificationId}/{fullName}/{email}") { backStackEntry ->
                 val phone = backStackEntry.arguments?.getString("phone") ?: ""
                 val verificationId = backStackEntry.arguments?.getString("verificationId") ?: ""
@@ -130,12 +131,12 @@ fun PocketNavHost(
                 )
             }
 
-            //-----------------------------------------------------
+            //---------------------------------------------------------------
             // PLAN
-            //-----------------------------------------------------
+            //---------------------------------------------------------------
             composable(route = "plan") { PlanScreen(navController) }
 
-            composable(route = "bill_planning") { BillPlanningScreen( navController) }
+            composable(route = "bill_planning") { BillPlanningScreen(navController) }
 
             composable("budgeting") {
                 BudgetPlanningScreen(
@@ -162,19 +163,74 @@ fun PocketNavHost(
                 )
             }
 
-            composable("financial_goals") {
+            //---------------------------------------------------------------
+            // GOALS
+            //---------------------------------------------------------------
+            // Main Goals screen - accessible from bottom navigation
+            composable("goals") {
                 val viewModel: GoalsViewModel = viewModel()
-
                 FinancialGoalsScreen(
+                    navController = navController,
                     viewModel = viewModel,
                     onBackToDashboard = {
                         navController.popBackStack("dashboard", inclusive = false)
                     }
                 )
             }
+
+            // Financial Goals screen (legacy route - kept for backward compatibility)
+            composable("financial_goals") {
+                val viewModel: GoalsViewModel = viewModel()
+                FinancialGoalsScreen(
+                    navController = navController,
+                    viewModel = viewModel,
+                    onBackToDashboard = {
+                        navController.popBackStack("dashboard", inclusive = false)
+                    }
+                )
+            }
+
+            // Goal Detail Screen - Full screen
+            composable("goal_detail/{goalId}") { backStackEntry ->
+                val goalId = backStackEntry.arguments?.getString("goalId") ?: ""
+                val viewModel: GoalsViewModel = viewModel()
+                // Find the goal from the ViewModel state
+                val goal = viewModel.uiState.value.goals.find { it.id == goalId }
+
+                GoalDetailScreen(
+                    goal = goal ?: SampleGoals.dreamVacation,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onEdit = {
+                        // Handle edit - navigate to edit screen or show dialog
+                    },
+                    onAddContribution = {
+                        // Handle add contribution
+                        goal?.let {
+                            viewModel.addContribution(it.id, 1000)
+                        }
+                    },
+                    onUpdateTarget = {
+                        // Handle update target
+                    },
+                    onPauseGoal = {
+                        // Handle pause goal
+                        goal?.let {
+                            viewModel.togglePauseGoal(it.id, true)
+                        }
+                    },
+                    onViewAllHistory = {
+                        // Navigate to history
+                    }
+                )
+            }
+
+            //---------------------------------------------------------------
+            // BILLS & SETTINGS
+            //---------------------------------------------------------------
             composable("bill_reminders") {
                 val viewModel: BillReminderViewModel = viewModel()
-
                 BillReminderScreen(
                     navController = navController,
                     viewModel = viewModel

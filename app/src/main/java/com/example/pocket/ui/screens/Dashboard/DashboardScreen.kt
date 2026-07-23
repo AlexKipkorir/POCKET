@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.pocket.navigation.BottomNavigationBar
 import com.example.pocket.ui.theme.PocketTheme
 import com.example.pocket.ui.theme.PrimaryRed
 import com.example.pocket.utils.calculateResponsivePadding
@@ -238,7 +237,9 @@ fun DashboardScreen(navController: NavController) {
             }
         } else {
             LazyColumn(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Safe-to-Spend Hero Section
@@ -299,7 +300,7 @@ fun DashboardScreen(navController: NavController) {
                     )
                 }
 
-                // Quick Stats Section - FIXED
+                // Quick Stats Section
                 item {
                     Column(
                         modifier = Modifier
@@ -627,15 +628,13 @@ fun DashboardScreen(navController: NavController) {
                     )
                 }
 
-                // Bottom Spacer for navigation bar
+                // Bottom Spacer for navigation bar (40dp less because no second nav bar)
                 item {
-                    Spacer(modifier = Modifier.height(80.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }
-
-        // Bottom Navigation Bar
-        BottomNavigationBar(navController = navController)
+        // ❌ REMOVED: BottomNavigationBar(navController = navController)
     }
 }
 

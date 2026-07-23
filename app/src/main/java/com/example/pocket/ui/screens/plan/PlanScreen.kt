@@ -1,6 +1,7 @@
 package com.example.pocket.ui.screens.plan
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -25,13 +26,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CardMembership
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.TrackChanges
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -52,7 +55,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,13 +77,24 @@ import kotlinx.coroutines.tasks.await
 /** Amber used for the "overspent" budget status badge. */
 private val WarningAmber = Color(0xFFF59E0B)
 
+/** Neutral hairline border used on cards throughout the Plan screen (design "outline" token). */
+private val CardBorder = Color(0xFFE5E7EB)
+
+/** Slate text scale used for secondary copy, matching the design system's slate palette. */
+private val Slate800 = Color(0xFF1E293B)
+private val Slate500 = Color(0xFF64748B)
+private val Slate400 = Color(0xFF94A3B8)
+private val Slate200 = Color(0xFFE2E8F0)
+private val Slate100 = Color(0xFFF1F5F9)
+private val Slate700 = Color(0xFF334155)
+
 data class PlanningTool(
     val id: String,
     val title: String,
     val subtitle: String,
     val icon: ImageVector,
     val iconColor: Color = PrimaryRed,
-    val backgroundColor: Color = PrimaryRed.copy(alpha = 0.05f),
+    val backgroundColor: Color = PrimaryRed.copy(alpha = 0.1f),
     val badgeCount: Int = 0,
     val badgeColor: Color = PrimaryRed,
     val route: String
@@ -83,19 +102,13 @@ data class PlanningTool(
 
 data class InsightCard(
     val id: String,
-    val title: String,
+    val label: String,
     val description: String,
     val icon: ImageVector,
-    val iconColor: Color = PrimaryRed
-)
-
-data class StatCard(
-    val id: String,
-    val title: String,
-    val amount: String,
-    val backgroundColor: Color,
-    val textColor: Color,
-    val isPrimary: Boolean = false
+    val iconColor: Color = PrimaryRed,
+    val ctaLabel: String,
+    val ctaRoute: String,
+    val isHighlighted: Boolean = false
 )
 
 @Composable
@@ -116,33 +129,49 @@ fun PlanScreen(navController: NavController) {
         listOf(
             InsightCard(
                 id = "optimization_tip",
-                title = "Optimization Tip",
-                description = "You have $${(totalPlanned - totalSpent).toInt()} unallocated. Move this to Savings Goals.",
-                icon = Icons.Filled.Lightbulb
+                label = "Top Tip",
+                description = "You have $${(totalPlanned - totalSpent).toInt()} in unallocated funds. Consider moving this to your Savings Goals.",
+                icon = Icons.Filled.Lightbulb,
+                iconColor = PrimaryRed,
+                ctaLabel = "Move Funds",
+                ctaRoute = "budgeting",
+                isHighlighted = true
             ),
             InsightCard(
                 id = "growth_forecast",
-                title = "Growth Forecast",
+                label = "Growth Forecast",
                 description = "Current trends suggest your net worth could increase by 4% this quarter.",
-                icon = Icons.AutoMirrored.Filled.TrendingUp
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                iconColor = Color(0xFF2563EB),
+                ctaLabel = "View Details",
+                ctaRoute = "monthly_report"
             ),
             InsightCard(
                 id = "savings_alert",
-                title = "Savings Alert",
+                label = "Savings Alert",
                 description = "You're on track to save $${(totalPlanned * 0.2).toInt()} this month. Keep it up!",
-                icon = Icons.Filled.Savings
+                icon = Icons.Filled.Savings,
+                iconColor = Color(0xFF2563EB),
+                ctaLabel = "View Goals",
+                ctaRoute = "goals"
             ),
             InsightCard(
                 id = "spending_alert",
-                title = "Spending Alert",
+                label = "Spending Alert",
                 description = "Your dining expenses are 15% above budget. Consider adjusting.",
-                icon = Icons.Filled.Warning
+                icon = Icons.Filled.Warning,
+                iconColor = Color(0xFF2563EB),
+                ctaLabel = "Review Budget",
+                ctaRoute = "budgeting"
             ),
             InsightCard(
                 id = "investment_tip",
-                title = "Investment Tip",
+                label = "Investment",
                 description = "Consider investing $${((totalPlanned - totalSpent) * 0.3).toInt()} in low-risk mutual funds.",
-                icon = Icons.Filled.AttachMoney
+                icon = Icons.Filled.AttachMoney,
+                iconColor = Color(0xFF2563EB),
+                ctaLabel = "Explore",
+                ctaRoute = "monthly_report"
             )
         )
     }
@@ -172,41 +201,18 @@ fun PlanScreen(navController: NavController) {
     }
 
     val availableAmount = totalPlanned - totalSpent
-    val statCards = remember(totalSpent, totalPlanned, availableAmount) {
-        listOf(
-            StatCard(
-                id = "total_spent",
-                title = "Total Spent",
-                amount = "$${totalSpent.toInt()}",
-                backgroundColor = PrimaryRed,
-                textColor = Color.White,
-                isPrimary = true
-            ),
-            StatCard(
-                id = "total_planned",
-                title = "Total Planned",
-                amount = "$${totalPlanned.toInt()}",
-                backgroundColor = Color(0xFFF1F5F9),
-                textColor = Color(0xFF64748B)
-            ),
-            StatCard(
-                id = "available",
-                title = "Available",
-                amount = "$${availableAmount.toInt()}",
-                backgroundColor = Color.White,
-                textColor = Color(0xFF0F172A)
-            )
-        )
-    }
 
     val planningTools = remember {
         listOf(
             PlanningTool(
                 id = "bills",
-                title = "Bills",
-                subtitle = "2 bills due",
+                title = "Bill Planning",
+                subtitle = "2 due soon",
                 icon = Icons.AutoMirrored.Filled.ReceiptLong,
+                iconColor = PrimaryRed,
+                backgroundColor = PrimaryRed.copy(alpha = 0.1f),
                 badgeCount = 2,
+                badgeColor = Color(0xFFF97316), // orange status dot, matches design
                 route = "bill_planning"
             ),
             PlanningTool(
@@ -214,20 +220,28 @@ fun PlanScreen(navController: NavController) {
                 title = "Budgeting",
                 subtitle = "80% allocated",
                 icon = Icons.Filled.Wallet,
+                iconColor = PrimaryRed,
+                backgroundColor = PrimaryRed.copy(alpha = 0.1f),
+                badgeCount = 1,
+                badgeColor = PrimaryRed,
                 route = "budgeting"
             ),
             PlanningTool(
                 id = "summary",
                 title = "Summary",
-                subtitle = "Monthly view",
+                subtitle = "Monthly overview",
                 icon = Icons.Filled.PieChart,
+                iconColor = Color(0xFF2563EB),
+                backgroundColor = Color(0xFF3B82F6).copy(alpha = 0.1f),
                 route = "monthly_summary"
             ),
             PlanningTool(
                 id = "report",
                 title = "Report",
-                subtitle = "Monthly review",
+                subtitle = "Financial report",
                 icon = Icons.Filled.Description,
+                iconColor = Color(0xFF9333EA),
+                backgroundColor = Color(0xFFA855F7).copy(alpha = 0.1f),
                 route = "monthly_report"
             ),
             PlanningTool(
@@ -235,7 +249,10 @@ fun PlanScreen(navController: NavController) {
                 title = "Goals",
                 subtitle = "4 active goals",
                 icon = Icons.Filled.TrackChanges,
+                iconColor = Color(0xFF059669),
+                backgroundColor = Color(0xFF10B981).copy(alpha = 0.1f),
                 badgeCount = 4,
+                badgeColor = Color(0xFF059669),
                 route = "goals"
             ),
             PlanningTool(
@@ -243,6 +260,8 @@ fun PlanScreen(navController: NavController) {
                 title = "Debt",
                 subtitle = "Systematic plan",
                 icon = Icons.Filled.CardMembership,
+                iconColor = Color(0xFF4F46E5),
+                backgroundColor = Color(0xFF6366F1).copy(alpha = 0.1f),
                 route = "debt_management"
             )
         )
@@ -263,27 +282,38 @@ fun PlanScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.background)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+                        )
                         .padding(
-                            horizontal = responsivePadding * 1.5f,
+                            horizontal = responsivePadding,
                             vertical = responsivePadding
                         )
                 ) {
-                    // Top Navigation Row - Centered title with settings on right
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Empty spacer on left to balance the settings button
-                        Spacer(modifier = Modifier.size(40.dp))
+                        IconButton(
+                            onClick = { navController.navigate("spend_settings") },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.FilterList,
+                                contentDescription = "Filter",
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                            )
+                        }
 
                         Text(
                             text = "Plan",
-                            style = MaterialTheme.typography.headlineLarge,
+                            style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 32.sp,
-                            lineHeight = 36.sp
+                            fontSize = 20.sp,
+                            lineHeight = 24.sp
                         )
 
                         IconButton(
@@ -291,43 +321,33 @@ fun PlanScreen(navController: NavController) {
                             modifier = Modifier.size(40.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Tune,
+                                imageVector = Icons.Filled.FilterList,
                                 contentDescription = "Settings",
-                                tint = MaterialTheme.colorScheme.onBackground
+                                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                             )
                         }
                     }
-
-                    // Subtitle
-                    Text(
-                        text = "Financial planning and budgeting tools",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 16.sp,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .align(Alignment.CenterHorizontally)
-                    )
                 }
             }
 
-            // Stats Cards Section (Horizontal Scroll)
+            // Stats Cards Section
             item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = responsivePadding),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = responsivePadding * 1.5f),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        statCards.forEach { statCard ->
-                            StatCardItem(statCard = statCard)
-                        }
-                    }
+                    SimpleStatCard(
+                        title = "Total Planned",
+                        amount = "$${totalPlanned.toInt()}",
+                        modifier = Modifier.weight(1f)
+                    )
+                    SimpleStatCard(
+                        title = "Total Spent",
+                        amount = "$${totalSpent.toInt()}",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
 
@@ -336,9 +356,8 @@ fun PlanScreen(navController: NavController) {
                 BudgetUtilizationCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = responsivePadding * 1.5f),
-                    spent = totalSpent,
-                    planned = totalPlanned,
+                        .padding(horizontal = responsivePadding),
+                    remaining = availableAmount,
                     utilization = budgetUtilization
                 )
             }
@@ -348,8 +367,8 @@ fun PlanScreen(navController: NavController) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = responsivePadding * 1.5f),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = responsivePadding),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -381,15 +400,15 @@ fun PlanScreen(navController: NavController) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = responsivePadding * 1.5f),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = responsivePadding),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        SectionTitle(text = "Insights")
+                        SectionTitle(text = "Planning Tools")
 
                         // Dots indicator
                         Row(
@@ -412,6 +431,7 @@ fun PlanScreen(navController: NavController) {
 
                     InsightCardItem(
                         insight = allInsights[currentInsightIndex],
+                        onCtaClick = { route -> navController.navigate(route) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -427,7 +447,7 @@ fun PlanScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = responsivePadding * 1.5f, bottom = responsivePadding * 3)
+                .padding(end = responsivePadding, bottom = responsivePadding * 3)
         ) {
             Box(
                 modifier = Modifier
@@ -441,7 +461,7 @@ fun PlanScreen(navController: NavController) {
                 IconButton(
                     onClick = { navController.navigate("budgeting") },
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(56.dp)
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
@@ -451,23 +471,12 @@ fun PlanScreen(navController: NavController) {
                             )
                         ),
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "Create Plan",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Text(
-                            text = "Create",
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Create Plan",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
             }
         }
@@ -487,44 +496,42 @@ private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     )
 }
 
+/** Plain white stat card — label + bold amount, matching the design system's "Total Planned / Total Spent" tiles. */
 @Composable
-fun StatCardItem(
-    statCard: StatCard,
+private fun SimpleStatCard(
+    title: String,
+    amount: String,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier
-            .width(140.dp)
-            .height(90.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = statCard.backgroundColor,
-            contentColor = statCard.textColor
+            containerColor = Color.White,
+            contentColor = Slate800
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (statCard.isPrimary) 4.dp else 2.dp
-        )
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = statCard.title,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = statCard.textColor.copy(alpha = if (statCard.isPrimary) 0.8f else 1f),
-                fontSize = 10.sp,
-                letterSpacing = 0.5.sp
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Slate500,
+                fontSize = 14.sp
             )
             Text(
-                text = statCard.amount,
+                text = amount,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = statCard.textColor,
-                fontSize = 20.sp
+                color = Slate800,
+                fontSize = 24.sp
             )
         }
     }
@@ -533,28 +540,26 @@ fun StatCardItem(
 @Composable
 fun BudgetUtilizationCard(
     modifier: Modifier = Modifier,
-    spent: Double,
-    planned: Double,
+    remaining: Double,
     utilization: Double
 ) {
-    val isOnTrack = utilization <= 85.0
-
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = Color.White,
+            contentColor = Slate800
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header with percentage
+            // Header with percentage badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -563,69 +568,65 @@ fun BudgetUtilizationCard(
                 Text(
                     text = "Budget Utilization",
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = "${utilization.toInt()}%",
-                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = PrimaryRed,
+                    color = Slate800,
                     fontSize = 14.sp
                 )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(PrimaryRed.copy(alpha = 0.1f))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "${utilization.toInt()}%",
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryRed,
+                        fontSize = 12.sp
+                    )
+                }
             }
 
             // Progress Bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(Slate100)
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(utilization.toFloat() / 100f)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(PrimaryRed)
+                        .fillMaxWidth(utilization.toFloat().coerceIn(0f, 100f) / 100f)
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(PrimaryRed, PrimaryRed.copy(alpha = 0.85f))
+                            )
+                        )
                 )
             }
 
-            // Footer with status
+            // Footer
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "$${spent.toInt()} of $${planned.toInt()} used",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp
+                    text = "$${remaining.toInt()} REMAINING",
+                    fontWeight = FontWeight.Medium,
+                    color = Slate500,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.5.sp
                 )
-
-                // Status badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50.dp))
-                        .background(
-                            if (isOnTrack) PrimaryRed.copy(alpha = 0.05f)
-                            else WarningAmber.copy(alpha = 0.05f)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = if (isOnTrack) "ON TRACK" else "OVERSPENT",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isOnTrack) PrimaryRed else WarningAmber,
-                        fontSize = 10.sp,
-                        letterSpacing = 0.5.sp
-                    )
-                }
+                Text(
+                    text = "Updated just now",
+                    fontStyle = FontStyle.Italic,
+                    color = Slate400,
+                    fontSize = 10.sp
+                )
             }
         }
     }
@@ -639,32 +640,24 @@ fun PlanningToolsGrid(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Two rows of 3 items each
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            tools.take(3).forEach { tool ->
-                PlanningToolCard(
-                    tool = tool,
-                    modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(tool.route) }
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            tools.drop(3).forEach { tool ->
-                PlanningToolCard(
-                    tool = tool,
-                    modifier = Modifier.weight(1f),
-                    onClick = { navController.navigate(tool.route) }
-                )
+        tools.chunked(2).forEach { rowTools ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                rowTools.forEach { tool ->
+                    PlanningToolCard(
+                        tool = tool,
+                        modifier = Modifier.weight(1f),
+                        onClick = { navController.navigate(tool.route) }
+                    )
+                }
+                // Keep a balanced row if the list has an odd count.
+                if (rowTools.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
         }
     }
@@ -677,26 +670,26 @@ fun PlanningToolCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = Color.White,
+            contentColor = Slate800
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Icon with background
+            // Icon with tinted background
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(tool.backgroundColor),
                 contentAlignment = Alignment.Center
             ) {
@@ -708,33 +701,32 @@ fun PlanningToolCard(
                 )
             }
 
-            // Title and subtitle
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = tool.title,
-                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 14.sp
+                    color = Slate800,
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp
                 )
 
-                // Subtitle with badge if applicable
-                if (tool.badgeCount > 0) {
-                    Text(
-                        text = "${tool.badgeCount} ${tool.subtitle}",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = tool.badgeColor,
-                        fontSize = 11.sp
-                    )
-                } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (tool.badgeCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(tool.badgeColor)
+                        )
+                    }
                     Text(
                         text = tool.subtitle,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
+                        fontWeight = FontWeight.Medium,
+                        color = Slate500,
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -745,51 +737,103 @@ fun PlanningToolCard(
 @Composable
 fun InsightCardItem(
     insight: InsightCard,
+    onCtaClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val highlightColor = if (insight.isHighlighted) PrimaryRed else Slate800
+    val cardBackground = if (insight.isHighlighted) PrimaryRed.copy(alpha = 0.05f) else Color.White
+    val cardBorderColor = if (insight.isHighlighted) PrimaryRed.copy(alpha = 0.1f) else CardBorder
+
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = cardBackground,
+            contentColor = Slate800
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = androidx.compose.foundation.BorderStroke(1.dp, cardBorderColor),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (insight.isHighlighted) 0.dp else 1.dp
+        )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
-                imageVector = insight.icon,
-                contentDescription = insight.title,
-                tint = insight.iconColor,
-                modifier = Modifier.size(24.dp)
-            )
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.weight(1f)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = insight.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 14.sp
+                Icon(
+                    imageVector = insight.icon,
+                    contentDescription = insight.label,
+                    tint = insight.iconColor,
+                    modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = insight.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp
+                    text = insight.label.uppercase(),
+                    fontWeight = FontWeight.Bold,
+                    color = insight.iconColor,
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp
                 )
             }
+
+            Text(
+                text = highlightAmounts(insight.description, highlightColor),
+                color = Slate700,
+                fontSize = 13.sp,
+                lineHeight = 19.sp
+            )
+
+            if (insight.isHighlighted) {
+                Button(
+                    onClick = { onCtaClick(insight.ctaRoute) },
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        horizontal = 20.dp,
+                        vertical = 10.dp
+                    )
+                ) {
+                    Text(text = insight.ctaLabel, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(Slate100)
+                        .border(1.dp, Slate200, RoundedCornerShape(50))
+                        .clickable { onCtaClick(insight.ctaRoute) }
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = insight.ctaLabel,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate700
+                    )
+                }
+            }
         }
+    }
+}
+
+/** Bolds dollar-amount substrings (e.g. "$450") within [text] using [color], for the insight description copy. */
+private fun highlightAmounts(text: String, color: Color): AnnotatedString {
+    val regex = Regex("""\$[\d,]+""")
+    return buildAnnotatedString {
+        var lastIndex = 0
+        for (match in regex.findAll(text)) {
+            append(text.substring(lastIndex, match.range.first))
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = color)) {
+                append(match.value)
+            }
+            lastIndex = match.range.last + 1
+        }
+        append(text.substring(lastIndex))
     }
 }
 

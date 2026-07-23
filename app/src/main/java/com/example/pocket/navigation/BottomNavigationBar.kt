@@ -53,6 +53,17 @@ fun BottomNavigationBar(
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
+    // Check if the current route matches any of the bottom nav items
+    val isSelected = { route: String ->
+        when {
+            // Exact match
+            currentRoute == route -> true
+            // For goals, also check financial_goals route
+            route == "goals" && currentRoute == "financial_goals" -> true
+            else -> false
+        }
+    }
+
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Spend,
@@ -91,9 +102,10 @@ fun BottomNavigationBar(
         ) {
             items.forEach { item ->
                 NavigationBarItem(
-                    selected = currentRoute == item.route,
+                    selected = isSelected(item.route),
                     onClick = {
                         navController.navigate(item.route) {
+                            // Pop up to the start destination to avoid stacking
                             popUpTo(navController.graph.startDestinationId) {
                                 saveState = true
                             }

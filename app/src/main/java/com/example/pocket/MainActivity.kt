@@ -42,7 +42,16 @@ class MainActivity : ComponentActivity() {
 fun PocketApp() {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-    val showBottomNav = currentRoute in setOf("home", "spend", "plan", "goals", "profile")
+
+    // Routes that should show the bottom navigation bar
+    val showBottomNav = currentRoute in setOf(
+        "dashboard",    // Home
+        "spend",        // Spend
+        "plan",         // Plan
+        "goals",        // Goals
+        "financial_goals", // Goals (alternative route)
+        "profile"       // Profile
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),

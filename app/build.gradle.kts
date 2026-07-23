@@ -95,4 +95,6 @@ dependencies {
 //    implementation("com.patrykandpatrick.vico:core:1.13.0")
 //    implementation("com.github.SmartToolFactory:Compose-Chart:1.0.4")
 
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
 }

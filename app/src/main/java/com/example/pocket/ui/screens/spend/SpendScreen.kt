@@ -1,6 +1,7 @@
 package com.example.pocket.ui.screens.spend
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -9,11 +10,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -21,13 +24,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBasket
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -46,10 +54,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -65,6 +76,16 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+/** Design-system neutrals shared with the Plan screen. */
+private val CardBorder = Color(0xFFE5E7EB)
+private val Slate800 = Color(0xFF1E293B)
+private val Slate500 = Color(0xFF64748B)
+private val Slate400 = Color(0xFF94A3B8)
+private val SurfaceContainer = Color(0xFFF1F0F0)
+private val SuccessGreen = Color(0xFF22C55E)
+private val WarningAmber = Color(0xFFF59E0B)
+private val ExpenseRed = Color(0xFFE11D48)
+
 data class SpendCardItem(
     val id: String,
     val title: String,
@@ -79,6 +100,7 @@ data class SpendCardItem(
 data class ChipItem(
     val id: String,
     val label: String,
+    val icon: ImageVector? = null,
     val isSelected: Boolean = false,
     val onClick: () -> Unit
 )
@@ -142,7 +164,7 @@ fun SpendScreen(navController: NavController) {
             SpendCardItem(
                 id = "add_expense",
                 title = "Add Expense",
-                icon = Icons.AutoMirrored.Filled.ReceiptLong,
+                icon = Icons.Filled.AddCircle,
                 iconColor = PrimaryRed,
                 backgroundColor = PrimaryRed.copy(alpha = 0.1f),
                 onClick = { navController.navigate("add_expense") }
@@ -151,16 +173,16 @@ fun SpendScreen(navController: NavController) {
                 id = "history",
                 title = "History",
                 icon = Icons.Filled.History,
-                iconColor = Color(0xFF6B7280), // Gray color
-                backgroundColor = Color(0xFF6B7280).copy(alpha = 0.1f),
+                iconColor = Slate500,
+                backgroundColor = SurfaceContainer,
                 onClick = { navController.navigate("history") }
             ),
             SpendCardItem(
                 id = "bills",
                 title = "Bills",
-                icon = Icons.Filled.CalendarToday,
-                iconColor = Color(0xFFF59E0B), // Warning color
-                backgroundColor = Color(0xFFF59E0B).copy(alpha = 0.1f),
+                icon = Icons.AutoMirrored.Filled.ReceiptLong,
+                iconColor = WarningAmber,
+                backgroundColor = WarningAmber.copy(alpha = 0.12f),
                 badgeCount = 2,
                 onClick = { navController.navigate("bill_reminders") }
             )
@@ -232,17 +254,19 @@ fun SpendScreen(navController: NavController) {
             ChipItem(
                 id = "total",
                 label = "KES ${(filteredTotalSpend / 1000).toInt()}k spent",
-                isSelected = true,
+                icon = Icons.AutoMirrored.Filled.TrendingDown,
                 onClick = { }
             ),
             ChipItem(
                 id = "average",
                 label = "KES ${filteredDailyAverage.toInt()}/day",
+                icon = Icons.Filled.Speed,
                 onClick = { }
             ),
             ChipItem(
                 id = "budget",
                 label = "${budgetRemainingPercent.toInt()}% budget left",
+                icon = Icons.Filled.PieChart,
                 onClick = { }
             )
         )
@@ -251,7 +275,6 @@ fun SpendScreen(navController: NavController) {
     val allActivities = remember {
         val now = Date()
         val calendar = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
 
         listOf(
             RecentSpendActivity(
@@ -269,8 +292,8 @@ fun SpendScreen(navController: NavController) {
                         modifier = Modifier.size(24.dp)
                     )
                 },
-                iconColor = Color(0xFFF59E0B),
-                backgroundColor = Color(0xFFF59E0B).copy(alpha = 0.1f),
+                iconColor = WarningAmber,
+                backgroundColor = WarningAmber.copy(alpha = 0.1f),
                 category = "Food & Drink"
             ),
             RecentSpendActivity(
@@ -311,8 +334,8 @@ fun SpendScreen(navController: NavController) {
                         modifier = Modifier.size(24.dp)
                     )
                 },
-                iconColor = Color(0xFF22C55E),
-                backgroundColor = Color(0xFF22C55E).copy(alpha = 0.1f),
+                iconColor = SuccessGreen,
+                backgroundColor = SuccessGreen.copy(alpha = 0.1f),
                 category = "Groceries"
             ),
             RecentSpendActivity(
@@ -417,67 +440,66 @@ fun SpendScreen(navController: NavController) {
         }
     }
 
+    val budgetUsedPercent = (100.0 - budgetRemainingPercent).coerceIn(0.0, 100.0)
+
+    // NOTE: no Scaffold / bottom bar here on purpose — the bottom nav is
+    // provided globally by the host, same as the Plan screen.
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Header Section
             item {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.background)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)
+                        )
                         .padding(
-                            horizontal = responsivePadding * 1.5f,
+                            horizontal = responsivePadding,
                             vertical = responsivePadding
-                        )
+                        ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Top Navigation Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    IconButton(
+                        onClick = { navController.navigate("menu") },
+                        modifier = Modifier.size(40.dp)
                     ) {
-                        // Empty space where back button was
-                        Spacer(modifier = Modifier.size(40.dp))
-
-                        // Title moved to center
-                        Text(
-                            text = "Spend",
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 32.sp,
-                            lineHeight = 36.sp
+                        Icon(
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = "Menu",
+                            tint = Slate500
                         )
-
-                        // Settings button
-                        IconButton(
-                            onClick = { navController.navigate("spend_settings") },
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Tune,
-                                contentDescription = "Settings",
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
                     }
 
-                    // Subtitle
                     Text(
-                        text = "Track and understand your expenses",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(top = 8.dp)
+                        text = "Spend",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryRed,
+                        fontSize = 20.sp,
+                        lineHeight = 24.sp
                     )
+
+                    IconButton(
+                        onClick = { navController.navigate("spend_settings") },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings",
+                            tint = Slate500
+                        )
+                    }
                 }
             }
 
@@ -486,278 +508,127 @@ fun SpendScreen(navController: NavController) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = responsivePadding * 1.5f),
-                    shape = RoundedCornerShape(16.dp),
+                        .padding(horizontal = responsivePadding),
+                    shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = Color.White,
+                        contentColor = Slate800
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
+                            .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Total Spend with filter indicator
-                        Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column {
+                                Text(
+                                    text = "THIS MONTH",
+                                    fontWeight = FontWeight.Medium,
+                                    color = Slate500,
+                                    fontSize = 11.sp,
+                                    letterSpacing = 1.sp
+                                )
+                                Text(
+                                    text = "KES ${"%,d".format(filteredTotalSpend.toInt())}",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Slate800,
+                                    fontSize = 34.sp,
+                                    lineHeight = 38.sp,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Filled.AccountBalanceWallet,
+                                contentDescription = null,
+                                tint = PrimaryRed.copy(alpha = 0.15f),
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Total Spend",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 14.sp
+                                    text = "Budget Usage",
+                                    color = Slate500,
+                                    fontSize = 13.sp
                                 )
                                 Text(
-                                    text = when (selectedFilterPeriod) {
-                                        FilterPeriod.TODAY -> "Today"
-                                        FilterPeriod.WEEKLY -> "This Week"
-                                        FilterPeriod.MONTHLY -> "This Month"
-                                        FilterPeriod.YEARLY -> "This Year"
-                                        FilterPeriod.ALL -> "All Time"
-                                    },
-                                    style = MaterialTheme.typography.labelSmall,
+                                    text = "${budgetRemainingPercent.toInt()}% left",
+                                    fontWeight = FontWeight.Bold,
                                     color = PrimaryRed,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontSize = 13.sp
                                 )
                             }
-                            Text(
-                                text = "KES ${filteredTotalSpend.toInt()}",
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 32.sp
-                            )
-                        }
 
-                        // Progress Bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth((budgetRemainingPercent / 100f).toFloat())
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(PrimaryRed)
-                            )
-                        }
-
-                        // Budget Info
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Budget used",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "${(100 - budgetRemainingPercent).toInt()}%",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Filter Chips
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Filter by period",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.padding(horizontal = responsivePadding * 1.5f)
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = responsivePadding * 1.5f),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        filterPeriods.forEach { chip ->
-                            FilterChip(
-                                chip = chip,
-                                onClick = chip.onClick
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Quick Action Cards Grid - 3 cards with balanced layout
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = responsivePadding * 1.5f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Quick Actions",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 18.sp
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(responsivePadding)
-                    ) {
-                        // Left column with Add Expense and History cards
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(responsivePadding)
-                        ) {
-                            // Add Expense Card
-                            SpendCard(
-                                cardItem = spendCards[0],
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            // History Card
-                            SpendCard(
-                                cardItem = spendCards[1],
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-
-                        // Right column with Bills card that takes full height
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            // Bills Card - Full height to match the two cards on the left
-                            Card(
-                                modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable(onClick = spendCards[2].onClick),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    contentColor = MaterialTheme.colorScheme.onSurface
-                                ),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(50))
+                                    .background(CardBorder)
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(IntrinsicSize.Max)
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(20.dp),
-                                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        // Badge for bills
-                                        if (spendCards[2].badgeCount > 0) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .align(Alignment.End)
-                                                    .clip(RoundedCornerShape(50.dp))
-                                                    .background(Color(0xFFF59E0B))
-                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                            ) {
-                                                Text(
-                                                    text = "${spendCards[2].badgeCount} DUE",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color.White,
-                                                    fontSize = 10.sp
-                                                )
-                                            }
-                                        }
-
-                                        // Icon
-                                        Box(
-                                            modifier = Modifier
-                                                .size(48.dp)
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .background(spendCards[2].backgroundColor),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = spendCards[2].icon,
-                                                contentDescription = spendCards[2].title,
-                                                tint = spendCards[2].iconColor,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-
-                                        // Title and content
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Text(
-                                                text = spendCards[2].title,
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onBackground,
-                                                fontSize = 16.sp
-                                            )
-
-                                            // Additional content to fill the space
-                                            Column(
-                                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                // Bill status indicator
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                                ) {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(8.dp)
-                                                            .clip(CircleShape)
-                                                            .background(Color(0xFF22C55E))
-                                                    )
-                                                    Text(
-                                                        text = "2 bills due",
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                        fontSize = 12.sp
-                                                    )
-                                                }
-
-                                                // Bill summary
-                                                Text(
-                                                    text = "View and manage upcoming bills",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    fontSize = 11.sp,
-                                                    lineHeight = 14.sp
-                                                )
-                                            }
-
-                                            // Spacer to push content up (optional, for better balance)
-                                            Spacer(modifier = Modifier.weight(1f))
-                                        }
-                                    }
-                                }
+                                        .fillMaxWidth((budgetUsedPercent / 100f).toFloat())
+                                        .height(8.dp)
+                                        .clip(RoundedCornerShape(50))
+                                        .background(SuccessGreen)
+                                )
                             }
                         }
                     }
+                }
+            }
+
+            // Period Filters
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = responsivePadding),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    filterPeriods.forEach { chip ->
+                        FilterChip(chip = chip, onClick = chip.onClick)
+                    }
+                }
+            }
+
+            // Quick Action Cards (bento grid: two stacked rows on the left, one tall card on the right)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = responsivePadding),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        SpendActionRow(cardItem = spendCards[0], modifier = Modifier.fillMaxWidth())
+                        SpendActionRow(cardItem = spendCards[1], modifier = Modifier.fillMaxWidth())
+                    }
+
+                    BillsQuickCard(
+                        cardItem = spendCards[2],
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    )
                 }
             }
 
@@ -767,7 +638,7 @@ fun SpendScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = responsivePadding * 1.5f),
+                        .padding(horizontal = responsivePadding),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     statsChips.forEach { chip ->
@@ -781,23 +652,23 @@ fun SpendScreen(navController: NavController) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = responsivePadding * 1.5f),
+                        .padding(horizontal = responsivePadding),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Recent Activity",
-                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = Slate800,
                         fontSize = 18.sp
                     )
 
                     Text(
-                        text = "${filteredActivities.size} transactions",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 14.sp
+                        text = "View All",
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryRed,
+                        fontSize = 13.sp,
+                        modifier = Modifier.clickable { navController.navigate("history") }
                     )
                 }
             }
@@ -809,7 +680,7 @@ fun SpendScreen(navController: NavController) {
                         filterPeriod = selectedFilterPeriod,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = responsivePadding * 1.5f, vertical = 24.dp)
+                            .padding(horizontal = responsivePadding, vertical = 24.dp)
                     )
                 }
             } else {
@@ -828,105 +699,120 @@ fun SpendScreen(navController: NavController) {
             }
         }
 
-        // Enhanced Floating Action Button
+        // Floating Action Button (pill, matching the design)
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = responsivePadding, bottom = responsivePadding * 3)
-        ) {
-            Box(
-                modifier = Modifier
-                    .shadow(
-                        elevation = 16.dp,
-                        shape = CircleShape,
-                        spotColor = PrimaryRed.copy(alpha = 0.5f)
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(14.dp),
+                    spotColor = PrimaryRed.copy(alpha = 0.4f)
+                )
+                .clip(RoundedCornerShape(14.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(PrimaryRed, PrimaryRed.copy(alpha = 0.85f))
                     )
-                    .clip(CircleShape)
+                )
+                .clickable { navController.navigate("add_expense") }
+                .padding(horizontal = 20.dp, vertical = 14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                IconButton(
-                    onClick = { navController.navigate("add_expense") },
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(
-                            brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                                colors = listOf(
-                                    PrimaryRed,
-                                    PrimaryRed.copy(alpha = 0.8f)
-                                )
-                            )
-                        ),
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "Add Expense",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Text(
-                            text = "Add",
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add Expense",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "Add",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
 
+/** Compact horizontal row card used for "Add Expense" and "History" quick actions. */
 @Composable
-fun SpendCard(
+fun SpendActionRow(
     cardItem: SpendCardItem,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier
-            .clickable(onClick = cardItem.onClick),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.clickable(onClick = cardItem.onClick),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = Color.White,
+            contentColor = Slate800
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(cardItem.backgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = cardItem.icon,
+                    contentDescription = cardItem.title,
+                    tint = cardItem.iconColor,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Text(
+                text = cardItem.title,
+                fontWeight = FontWeight.Bold,
+                color = Slate800,
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
+/** Tall card spanning both rows on the right — matches the design's "Bills" bento tile. */
+@Composable
+fun BillsQuickCard(
+    cardItem: SpendCardItem,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.clickable(onClick = cardItem.onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White,
+            contentColor = Slate800
+        ),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Max)) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Badge for bills
-                if (cardItem.badgeCount > 0) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .clip(RoundedCornerShape(50.dp))
-                            .background(Color(0xFFF59E0B))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "${cardItem.badgeCount} DUE",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            fontSize = 10.sp
-                        )
-                    }
-                }
-
-                // Icon
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
                         .background(cardItem.backgroundColor),
                     contentAlignment = Alignment.Center
                 ) {
@@ -934,29 +820,31 @@ fun SpendCard(
                         imageVector = cardItem.icon,
                         contentDescription = cardItem.title,
                         tint = cardItem.iconColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
-                // Title and Subtitle
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = cardItem.title,
-                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 16.sp
+                        color = Slate800,
+                        fontSize = 18.sp
                     )
-
-                    cardItem.subtitle?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 11.sp
-                        )
+                    if (cardItem.badgeCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(WarningAmber)
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "${cardItem.badgeCount} DUE SOON",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 10.sp
+                            )
+                        }
                     }
                 }
             }
@@ -972,19 +860,20 @@ fun FilterChip(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(50.dp))
-            .background(
-                if (chip.isSelected) PrimaryRed
-                else MaterialTheme.colorScheme.surfaceVariant
+            .clip(RoundedCornerShape(50))
+            .background(if (chip.isSelected) PrimaryRed else Color.White)
+            .border(
+                width = 1.dp,
+                color = if (chip.isSelected) Color.Transparent else CardBorder,
+                shape = RoundedCornerShape(50)
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Text(
             text = chip.label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (chip.isSelected) FontWeight.SemiBold else FontWeight.Medium,
-            color = if (chip.isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = if (chip.isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = if (chip.isSelected) Color.White else Slate800,
             fontSize = 14.sp
         )
     }
@@ -997,21 +886,31 @@ fun StatsChip(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(
-                if (chip.isSelected) PrimaryRed.copy(alpha = 0.1f)
-                else MaterialTheme.colorScheme.surfaceVariant
-            )
+            .clip(RoundedCornerShape(8.dp))
+            .background(SurfaceContainer)
+            .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
             .clickable(onClick = chip.onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
-        Text(
-            text = chip.label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (chip.isSelected) FontWeight.SemiBold else FontWeight.Medium,
-            color = if (chip.isSelected) PrimaryRed else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            chip.icon?.let {
+                Icon(
+                    imageVector = it,
+                    contentDescription = null,
+                    tint = Slate500,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Text(
+                text = chip.label,
+                fontWeight = FontWeight.Medium,
+                color = Slate500,
+                fontSize = 12.sp
+            )
+        }
     }
 }
 
@@ -1019,24 +918,25 @@ fun StatsChip(
 fun RecentSpendActivityItem(
     activity: RecentSpendActivity,
     onClick: () -> Unit,
-    horizontalPadding: androidx.compose.ui.unit.Dp,
+    horizontalPadding: Dp,
     modifier: Modifier = Modifier
 ) {
-    val timeAgo = remember(activity.timestamp) {
-        calculateTimeAgo(activity.timestamp)
+    val displayTimestamp = remember(activity.timestamp) {
+        formatActivityTimestamp(activity.timestamp)
     }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = horizontalPadding * 1.5f)
+            .padding(horizontal = horizontalPadding, vertical = 4.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = Color.White,
+            contentColor = Slate800
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -1049,62 +949,37 @@ fun RecentSpendActivityItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Icon
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(activity.backgroundColor),
+                        .background(SurfaceContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     activity.icon()
                 }
 
-                // Details
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = activity.title,
-                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 14.sp
+                        color = Slate800,
+                        fontSize = 16.sp
                     )
                     Text(
-                        text = activity.category,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 10.sp
-                    )
-                    Text(
-                        text = timeAgo,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        fontSize = 10.sp
+                        text = displayTimestamp,
+                        color = Slate500,
+                        fontSize = 12.sp
                     )
                 }
             }
 
-            // Amount
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = "-KES ${activity.amount.toInt()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFE11D48), // Expense red color
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = "Expense",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 10.sp
-                )
-            }
+            Text(
+                text = "-KES ${"%,d".format(activity.amount.toInt())}",
+                fontWeight = FontWeight.Bold,
+                color = ExpenseRed,
+                fontSize = 15.sp
+            )
         }
     }
 }
@@ -1122,7 +997,7 @@ fun EmptyActivityState(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
             contentDescription = "No Activity",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+            tint = Slate400.copy(alpha = 0.6f),
             modifier = Modifier.size(64.dp)
         )
 
@@ -1136,9 +1011,8 @@ fun EmptyActivityState(
                 FilterPeriod.YEARLY -> "No expenses this year"
                 FilterPeriod.ALL -> "No expenses yet"
             },
-            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = Slate800,
             fontSize = 16.sp
         )
 
@@ -1150,12 +1024,28 @@ fun EmptyActivityState(
                 FilterPeriod.YEARLY -> "Your yearly expenses will appear here"
                 FilterPeriod.ALL -> "Add your first expense to get started"
             },
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            color = Slate500,
             fontSize = 12.sp,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp)
         )
+    }
+}
+
+/** Formats a timestamp as "Today, 9:41 AM" / "Yesterday, 4:15 PM" / "MMM dd, h:mm a", matching the design. */
+private fun formatActivityTimestamp(timestamp: Date): String {
+    val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+    val today = Calendar.getInstance()
+    val activityDay = Calendar.getInstance().apply { time = timestamp }
+    val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
+
+    fun isSameDay(a: Calendar, b: Calendar) =
+        a.get(Calendar.YEAR) == b.get(Calendar.YEAR) && a.get(Calendar.DAY_OF_YEAR) == b.get(Calendar.DAY_OF_YEAR)
+
+    return when {
+        isSameDay(today, activityDay) -> "Today, ${timeFormat.format(timestamp)}"
+        isSameDay(yesterday, activityDay) -> "Yesterday, ${timeFormat.format(timestamp)}"
+        else -> SimpleDateFormat("MMM dd, h:mm a", Locale.getDefault()).format(timestamp)
     }
 }
 
